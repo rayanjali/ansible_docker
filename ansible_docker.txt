@@ -1,0 +1,50 @@
+- hosts: all
+  tasks:
+  - name: Adding repo
+    yum_repository:
+      name: "docker"
+      baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable"
+      gpgcheck: no
+      description: "abcd"
+    register: x
+  - debug:
+          var: x
+  - package:
+      name: "docker-ce-18.09.1-3.e17.x86_64"
+      state: present
+    register: y
+  - debug:
+           var: y
+  - service:
+      name: "docker"
+      state: started
+      enabled: yes
+  - command: yum install python3
+  - command: pip3 install docker
+  - name: Creating directory
+    file:
+          path: /workspace5
+          state: directory
+  - name: copy the webpages to the directory ws
+    copy:
+          src: my.html
+          dest: /workspace5
+          remote_src: no
+    register: a
+  - debug:
+           var: a
+  - name: creating the container and expose the port
+    docker_container:
+          name: WEBSERVER
+          image: httpd
+          state: started
+          exposed_ports:
+          - 80
+          ports:
+          - "8081:80"
+          volumes:
+          - /workspace5:/usr/local/apache2/htdocs
+    register: b
+  - debug:
+           var: b 
+
